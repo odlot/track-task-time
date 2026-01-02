@@ -5,7 +5,8 @@ RUN apt-get update && \
     apt-get install -y npm
 
 RUN apt-get install -y build-essential && \
-    apt-get install -y curl
+    apt-get install -y curl && \
+    apt-get install -y gh
 
 RUN npm i -g @openai/codex
 
