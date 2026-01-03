@@ -20,7 +20,9 @@ struct Cli {
 
 #[derive(Subcommand)]
 enum Command {
-    Start { task: String },
+    Start {
+        task: String,
+    },
     Stop,
     Pause,
     Resume,
@@ -103,8 +105,7 @@ fn main() {
             if let Some((idx, state)) = current_task_state(&store) {
                 if state == TaskState::Active {
                     pause_task(&mut store, idx, now);
-                    save_store(&data_file, &store)
-                        .unwrap_or_else(|err| exit_with_error(&err));
+                    save_store(&data_file, &store).unwrap_or_else(|err| exit_with_error(&err));
                 } else {
                     exit_with_error("Task is already paused. Resume it with \"ttt resume\".");
                 }
@@ -112,25 +113,22 @@ fn main() {
                 exit_with_error("No active task. Start one with \"ttt start <task>\".");
             }
         }
-        Command::Resume => {
-            match current_task_state(&store) {
-                Some((idx, TaskState::Paused)) => {
-                    resume_task(&mut store, idx, now);
-                    save_store(&data_file, &store)
-                        .unwrap_or_else(|err| exit_with_error(&err));
-                }
-                Some((_, TaskState::Active)) => {
-                    let active_name = active_task_name(&store).unwrap_or_default();
-                    exit_with_error(&format!(
-                        "Task \"{}\" is already running. Pause it with \"ttt pause\".",
-                        active_name
-                    ));
-                }
-                None => {
-                    exit_with_error("No paused task. Start one with \"ttt start <task>\".");
-                }
+        Command::Resume => match current_task_state(&store) {
+            Some((idx, TaskState::Paused)) => {
+                resume_task(&mut store, idx, now);
+                save_store(&data_file, &store).unwrap_or_else(|err| exit_with_error(&err));
             }
-        }
+            Some((_, TaskState::Active)) => {
+                let active_name = active_task_name(&store).unwrap_or_default();
+                exit_with_error(&format!(
+                    "Task \"{}\" is already running. Pause it with \"ttt pause\".",
+                    active_name
+                ));
+            }
+            None => {
+                exit_with_error("No paused task. Start one with \"ttt start <task>\".");
+            }
+        },
         Command::Status => match current_task_state(&store) {
             Some((idx, TaskState::Active)) => {
                 let task = &store.tasks[idx];
@@ -183,10 +181,10 @@ fn load_store(path: &Path) -> Result<Store, String> {
 }
 
 fn save_store(path: &Path, store: &Store) -> Result<(), String> {
-    if let Some(parent) = path.parent() {
-        if !parent.exists() {
-            fs::create_dir_all(parent).map_err(|err| err.to_string())?;
-        }
+    if let Some(parent) = path.parent()
+        && !parent.exists()
+    {
+        fs::create_dir_all(parent).map_err(|err| err.to_string())?;
     }
 
     let payload = serde_json::to_string_pretty(store).map_err(|err| err.to_string())?;
@@ -211,7 +209,13 @@ fn current_task_state(store: &Store) -> Option<(usize, TaskState)> {
 
 fn active_task_name(store: &Store) -> Option<String> {
     current_task_state(store)
-        .and_then(|(idx, state)| if state == TaskState::Active { Some(idx) } else { None })
+        .and_then(|(idx, state)| {
+            if state == TaskState::Active {
+                Some(idx)
+            } else {
+                None
+            }
+        })
         .map(|idx| store.tasks[idx].name.clone())
 }
 
@@ -271,8 +275,14 @@ fn report_today(store: &Store, now: DateTime<Utc>) -> Vec<(String, i64)> {
     let start_local = date.and_hms_opt(0, 0, 0).unwrap();
     let end_local = start_local + Duration::days(1);
 
-    let start_utc = Local.from_local_datetime(&start_local).unwrap().with_timezone(&Utc);
-    let end_utc = Local.from_local_datetime(&end_local).unwrap().with_timezone(&Utc);
+    let start_utc = Local
+        .from_local_datetime(&start_local)
+        .unwrap()
+        .with_timezone(&Utc);
+    let end_utc = Local
+        .from_local_datetime(&end_local)
+        .unwrap()
+        .with_timezone(&Utc);
 
     let mut totals: HashMap<String, (String, i64)> = HashMap::new();
 
@@ -289,10 +299,7 @@ fn report_today(store: &Store, now: DateTime<Utc>) -> Vec<(String, i64)> {
         entry.1 += seconds;
     }
 
-    let mut output: Vec<(String, i64)> = totals
-        .into_values()
-        .map(|(name, secs)| (name, secs))
-        .collect();
+    let mut output: Vec<(String, i64)> = totals.into_values().collect();
     output.sort_by(|a, b| a.0.to_lowercase().cmp(&b.0.to_lowercase()));
     output
 }

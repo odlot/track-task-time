@@ -3,13 +3,18 @@
 ## Project Structure & Module Organization
 
 - Root contains project docs and tooling (`README.md`, `LICENSE`, `Dockerfile`, `.gitignore`).
+- `rust-toolchain.toml` pins the Rust toolchain for local and CI usage.
 - `app/` contains the Rust CLI crate (`Cargo.toml`, `Cargo.lock`, `src/`).
+- `docs/` contains the product requirements and detailed design documents.
+- `.github/workflows/ci.yml` runs Rust formatting and tests on pushes and PRs.
 - `app/target/` is build output and should not be committed.
 
 ## Build, Test, and Development Commands
 
 - Build the CLI: `cd app && cargo build`
 - Run tests: `cd app && cargo test`
+- Check formatting: `cd app && cargo fmt --check`
+- Run linting: `cd app && cargo clippy -- -D warnings`
 - Build container: `docker build . -t track-task-time:0.1.3`
 - Run container: `docker container run -d -it --rm --mount type=bind,src=./,dst=/app track-task-time:0.1.4 bash`
 

@@ -1,0 +1,36 @@
+name: CI
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+
+jobs:
+  rust:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+
+      - name: Cache cargo
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: |
+            app -> target
+
+      - name: Format
+        working-directory: app
+        run: cargo fmt --check
+
+      - name: Test
+        working-directory: app
+        run: cargo test
+
+      - name: Lint
+        working-directory: app
+        run: cargo clippy -- -D warnings
