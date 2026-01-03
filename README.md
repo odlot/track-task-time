@@ -31,6 +31,7 @@ ttt [--data-file <path>] <command>
 - `pause`: Pause the active task.
 - `resume`: Resume the paused task.
 - `status`: Show the current task and elapsed time.
+- `location`: Show the data file location.
 - `report`: Show today’s totals (default: today).
 
 ### Examples

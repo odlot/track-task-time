@@ -41,6 +41,8 @@ enum Command {
     Resume,
     #[command(about = "Show the current task and elapsed time")]
     Status,
+    #[command(about = "Show the data file location")]
+    Location,
     #[command(about = "Show today's totals (default)")]
     Report {
         #[arg(long, help = "Report today's totals (default)")]
@@ -157,6 +159,9 @@ fn main() {
             }
             None => println!("No active task."),
         },
+        Command::Location => {
+            println!("{}", data_file.display());
+        }
         Command::Report { today: _ } => {
             let report = report_today(&store, now);
             if report.is_empty() {
