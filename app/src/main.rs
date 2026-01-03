@@ -384,19 +384,8 @@ fn report_today(store: &Store, now: DateTime<Utc>) -> Vec<ReportEntry> {
         let mut latest: Option<DateTime<Utc>> = None;
 
         for segment in &task.segments {
-            let segment_end = segment.end_at.unwrap_or(now);
-            if segment_end <= start_utc || segment.start_at >= end_utc {
+            let Some((start, end)) = overlap_window(segment, start_utc, end_utc, now) else {
                 continue;
-            }
-            let start = if segment.start_at > start_utc {
-                segment.start_at
-            } else {
-                start_utc
-            };
-            let end = if segment_end < end_utc {
-                segment_end
-            } else {
-                end_utc
             };
             let duration = (end - start).num_seconds().max(0);
             if duration == 0 {
@@ -433,22 +422,23 @@ fn report_today(store: &Store, now: DateTime<Utc>) -> Vec<ReportEntry> {
     }
 
     entries.sort_by(|a, b| {
-        b.start_at
-            .cmp(&a.start_at)
-            .then_with(|| b.end_at.cmp(&a.end_at))
+        b.end_at
+            .cmp(&a.end_at)
+            .then_with(|| b.start_at.cmp(&a.start_at))
+            .then_with(|| a.name.to_lowercase().cmp(&b.name.to_lowercase()))
     });
     entries
 }
 
-fn overlap_seconds(
+fn overlap_window(
     segment: &Segment,
     window_start: DateTime<Utc>,
     window_end: DateTime<Utc>,
     now: DateTime<Utc>,
-) -> i64 {
+) -> Option<(DateTime<Utc>, DateTime<Utc>)> {
     let segment_end = segment.end_at.unwrap_or(now);
     if segment_end <= window_start || segment.start_at >= window_end {
-        return 0;
+        return None;
     }
     let start = if segment.start_at > window_start {
         segment.start_at
@@ -460,7 +450,10 @@ fn overlap_seconds(
     } else {
         window_end
     };
-    (end - start).num_seconds().max(0)
+    if end <= start {
+        return None;
+    }
+    Some((start, end))
 }
 
 fn format_duration(seconds: i64) -> String {
@@ -802,7 +795,7 @@ mod tests {
     }
 
     #[test]
-    fn overlap_seconds_handles_window_edges() {
+    fn overlap_window_handles_window_edges() {
         let seg_start = Utc.with_ymd_and_hms(2025, 1, 1, 9, 0, 0).unwrap();
         let seg_end = Utc.with_ymd_and_hms(2025, 1, 1, 10, 0, 0).unwrap();
         let window_start = Utc.with_ymd_and_hms(2025, 1, 1, 9, 30, 0).unwrap();
@@ -812,9 +805,8 @@ mod tests {
             end_at: Some(seg_end),
         };
 
-        assert_eq!(
-            overlap_seconds(&segment, window_start, window_end, window_end),
-            1800
-        );
+        let result = overlap_window(&segment, window_start, window_end, window_end).unwrap();
+        assert_eq!(result.0, window_start);
+        assert_eq!(result.1, seg_end);
     }
 }
