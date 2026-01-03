@@ -1,4 +1,3 @@
-use std::collections::HashMap;
 use std::fs;
 use std::io::{self, Write};
 use std::path::{Path, PathBuf};
@@ -102,6 +101,14 @@ struct Segment {
     end_at: Option<DateTime<Utc>>,
 }
 
+#[derive(Debug)]
+struct ReportEntry {
+    name: String,
+    start_at: DateTime<Utc>,
+    end_at: DateTime<Utc>,
+    seconds: i64,
+}
+
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 enum TaskState {
     Active,
@@ -199,8 +206,14 @@ fn main() {
                 println!("No entries for today.");
                 return;
             }
-            for (name, seconds) in report {
-                println!("{} — {}", name, format_duration(seconds));
+            for entry in report {
+                println!(
+                    "{} — {} to {} ({})",
+                    entry.name,
+                    format_datetime_local_display(entry.start_at),
+                    format_datetime_local_display(entry.end_at),
+                    format_duration(entry.seconds)
+                );
             }
         }
         Command::Edit {
@@ -348,7 +361,7 @@ fn segment_duration(segment: &Segment, now: DateTime<Utc>) -> i64 {
     duration.num_seconds().max(0)
 }
 
-fn report_today(store: &Store, now: DateTime<Utc>) -> Vec<(String, i64)> {
+fn report_today(store: &Store, now: DateTime<Utc>) -> Vec<ReportEntry> {
     let now_local = now.with_timezone(&Local);
     let date = now_local.date_naive();
     let start_local = date.and_hms_opt(0, 0, 0).unwrap();
@@ -363,24 +376,68 @@ fn report_today(store: &Store, now: DateTime<Utc>) -> Vec<(String, i64)> {
         .unwrap()
         .with_timezone(&Utc);
 
-    let mut totals: HashMap<String, (String, i64)> = HashMap::new();
+    let mut entries = Vec::new();
 
     for task in &store.tasks {
         let mut seconds = 0i64;
+        let mut earliest: Option<DateTime<Utc>> = None;
+        let mut latest: Option<DateTime<Utc>> = None;
+
         for segment in &task.segments {
-            seconds += overlap_seconds(segment, start_utc, end_utc, now);
+            let segment_end = segment.end_at.unwrap_or(now);
+            if segment_end <= start_utc || segment.start_at >= end_utc {
+                continue;
+            }
+            let start = if segment.start_at > start_utc {
+                segment.start_at
+            } else {
+                start_utc
+            };
+            let end = if segment_end < end_utc {
+                segment_end
+            } else {
+                end_utc
+            };
+            let duration = (end - start).num_seconds().max(0);
+            if duration == 0 {
+                continue;
+            }
+            seconds += duration;
+            earliest = Some(match earliest {
+                Some(value) => value.min(start),
+                None => start,
+            });
+            latest = Some(match latest {
+                Some(value) => value.max(end),
+                None => end,
+            });
         }
+
         if seconds == 0 {
             continue;
         }
-        let key = task.name.to_lowercase();
-        let entry = totals.entry(key).or_insert_with(|| (task.name.clone(), 0));
-        entry.1 += seconds;
+
+        let Some(start_at) = earliest else {
+            continue;
+        };
+        let Some(end_at) = latest else {
+            continue;
+        };
+
+        entries.push(ReportEntry {
+            name: task.name.clone(),
+            start_at,
+            end_at,
+            seconds,
+        });
     }
 
-    let mut output: Vec<(String, i64)> = totals.into_values().collect();
-    output.sort_by(|a, b| a.0.to_lowercase().cmp(&b.0.to_lowercase()));
-    output
+    entries.sort_by(|a, b| {
+        b.start_at
+            .cmp(&a.start_at)
+            .then_with(|| b.end_at.cmp(&a.end_at))
+    });
+    entries
 }
 
 fn overlap_seconds(
@@ -649,6 +706,12 @@ fn parse_optional_datetime_input(
 
 fn format_datetime_local(dt: DateTime<Utc>) -> String {
     dt.with_timezone(&Local).to_rfc3339()
+}
+
+fn format_datetime_local_display(dt: DateTime<Utc>) -> String {
+    dt.with_timezone(&Local)
+        .format("%Y-%m-%d %H:%M:%S")
+        .to_string()
 }
 
 fn prompt_line(message: &str) -> Result<String, String> {

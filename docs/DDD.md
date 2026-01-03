@@ -9,7 +9,7 @@ High-level components:
 - CLI interface (argument parsing and command dispatch).
 - Task state manager (start, stop, pause, resume).
 - Task editor (interactive selection and edits via flags).
-- Reporting engine (daily totals by task name).
+- Reporting engine (daily entries with start/end times).
 - Storage layer (load/save JSON store).
 
 Flow:
@@ -74,7 +74,7 @@ CLI commands and flags:
   - Interactive task selection with prompts to edit names and times.
   - Flags: `--id`, `--index`, `--name`, `--created-at`, `--closed-at`, `--segment-edit`.
 - `ttt report`
-  - Prints today totals by task name.
+  - Prints today's entries with start/end times (most recent first).
 - Global flag: `--data-file <path>` overrides the default data location.
 
 Exit behavior:

@@ -32,7 +32,7 @@ People who work across multiple tasks need a lightweight way to track time witho
 - Pause and resume without splitting into separate tasks.
 - Stop and close a task explicitly.
 - Show current status and elapsed time.
-- Generate a daily report aggregated by task name (case-insensitive).
+- Generate a daily report listing tasks with start/end times (most recent first).
 - Store data locally in a JSON file with an override flag.
 - Edit task names and timestamps after the fact.
 - Show the resolved data file location.
@@ -50,7 +50,7 @@ People who work across multiple tasks need a lightweight way to track time witho
 - Check status
   - Run `ttt status` to view the current task and elapsed time.
 - Get a daily report
-  - Run `ttt report` to see totals for today.
+  - Run `ttt report` to see entries with start/end times for today.
 - Edit a task
   - Run `ttt edit` and select a task from the list.
   - Update the task name and timestamps interactively, or use flags.
