@@ -13,7 +13,7 @@ use uuid::Uuid;
 #[command(
     name = "ttt",
     about = "Track task time from the command line",
-    after_help = "Examples:\n  ttt start \"Write docs\"\n  ttt pause\n  ttt resume\n  ttt status\n  ttt report\n  ttt stop"
+    after_help = "Examples:\n  ttt start \"Write docs\"\n  ttt pause\n  ttt resume\n  ttt status\n  ttt report\n  ttt stop\n  ttt location\n  ttt edit"
 )]
 struct Cli {
     #[arg(
@@ -47,6 +47,37 @@ enum Command {
     Report {
         #[arg(long, help = "Report today's totals (default)")]
         today: bool,
+    },
+    #[command(about = "Edit a task name or time segments")]
+    Edit {
+        #[arg(long, value_name = "ID", help = "Task id to edit")]
+        id: Option<String>,
+        #[arg(
+            long,
+            value_name = "INDEX",
+            help = "Task index from the list (1-based)"
+        )]
+        index: Option<usize>,
+        #[arg(long, value_name = "NAME", help = "Rename the task")]
+        name: Option<String>,
+        #[arg(
+            long,
+            value_name = "RFC3339|now",
+            help = "Override created time (RFC3339 or 'now')"
+        )]
+        created_at: Option<String>,
+        #[arg(
+            long,
+            value_name = "RFC3339|open",
+            help = "Override closed time (RFC3339 or 'open')"
+        )]
+        closed_at: Option<String>,
+        #[arg(
+            long,
+            value_name = "INDEX,START,END",
+            help = "Edit a segment (1-based). END can be 'open'."
+        )]
+        segment_edit: Vec<String>,
     },
 }
 
@@ -171,6 +202,34 @@ fn main() {
             for (name, seconds) in report {
                 println!("{} — {}", name, format_duration(seconds));
             }
+        }
+        Command::Edit {
+            id,
+            index,
+            name,
+            created_at,
+            closed_at,
+            segment_edit,
+        } => {
+            let idx = match resolve_task_index(&store, now, id, index) {
+                Ok(idx) => idx,
+                Err(err) => exit_with_error(&err),
+            };
+
+            let task = &mut store.tasks[idx];
+            let has_edits = name.is_some()
+                || created_at.is_some()
+                || closed_at.is_some()
+                || !segment_edit.is_empty();
+
+            if has_edits {
+                apply_task_edits(task, name, created_at, closed_at, segment_edit, now)
+                    .unwrap_or_else(|err| exit_with_error(&err));
+            } else {
+                edit_task_interactive(task, now).unwrap_or_else(|err| exit_with_error(&err));
+            }
+
+            save_store(&data_file, &store).unwrap_or_else(|err| exit_with_error(&err));
         }
     }
 }
@@ -369,6 +428,246 @@ fn prompt_yes_no(message: &str) -> bool {
 fn exit_with_error(message: &str) -> ! {
     eprintln!("{}", message);
     std::process::exit(2);
+}
+
+fn resolve_task_index(
+    store: &Store,
+    now: DateTime<Utc>,
+    id: Option<String>,
+    index: Option<usize>,
+) -> Result<usize, String> {
+    if store.tasks.is_empty() {
+        return Err("No tasks to edit.".into());
+    }
+
+    if id.is_some() && index.is_some() {
+        return Err("Use either --id or --index, not both.".into());
+    }
+
+    if let Some(id) = id {
+        return store
+            .tasks
+            .iter()
+            .position(|task| task.id == id)
+            .ok_or_else(|| format!("No task found with id \"{}\".", id));
+    }
+
+    if let Some(index) = index {
+        if index == 0 || index > store.tasks.len() {
+            return Err(format!(
+                "Task index must be between 1 and {}.",
+                store.tasks.len()
+            ));
+        }
+        return Ok(index - 1);
+    }
+
+    prompt_task_selection(store, now)
+}
+
+fn prompt_task_selection(store: &Store, now: DateTime<Utc>) -> Result<usize, String> {
+    println!("Select a task to edit:");
+    for (idx, task) in store.tasks.iter().enumerate() {
+        let id_short = short_id(&task.id);
+        let status = task_status(task);
+        let elapsed = format_duration(total_elapsed(task, now));
+        println!(
+            "{:>3}) [{}] {} ({}) total {}",
+            idx + 1,
+            status,
+            task.name,
+            id_short,
+            elapsed
+        );
+    }
+
+    let input = prompt_line("Enter task number (or 'q' to cancel): ")?;
+    if input.is_empty() || input.eq_ignore_ascii_case("q") || input.eq_ignore_ascii_case("quit") {
+        return Err("Canceled.".into());
+    }
+    let selection: usize = input
+        .parse()
+        .map_err(|_| "Invalid selection. Enter a number from the list.".to_string())?;
+    if selection == 0 || selection > store.tasks.len() {
+        return Err(format!(
+            "Task index must be between 1 and {}.",
+            store.tasks.len()
+        ));
+    }
+    Ok(selection - 1)
+}
+
+fn short_id(id: &str) -> &str {
+    if id.len() > 8 { &id[..8] } else { id }
+}
+
+fn task_status(task: &Task) -> &'static str {
+    if task.segments.iter().any(|seg| seg.end_at.is_none()) {
+        "active"
+    } else if task.closed_at.is_none() && !task.segments.is_empty() {
+        "paused"
+    } else {
+        "stopped"
+    }
+}
+
+fn edit_task_interactive(task: &mut Task, now: DateTime<Utc>) -> Result<(), String> {
+    println!("Editing task: {}", task.name);
+
+    if let Some(input) = prompt_optional(&format!("Name [{}]: ", task.name))? {
+        task.name = input;
+    }
+
+    let created_label = format_datetime_local(task.created_at);
+    if let Some(input) =
+        prompt_optional(&format!("Created at [{}] (RFC3339/now): ", created_label))?
+    {
+        task.created_at = parse_datetime_input(&input, now, "created at")?;
+    }
+
+    let closed_label = match task.closed_at {
+        Some(closed_at) => format_datetime_local(closed_at),
+        None => "open".to_string(),
+    };
+    if let Some(input) = prompt_optional(&format!(
+        "Closed at [{}] (RFC3339/now/open): ",
+        closed_label
+    ))? {
+        task.closed_at = parse_optional_datetime_input(&input, now, "closed at")?;
+    }
+
+    if task.segments.is_empty() {
+        println!("No segments to edit.");
+        return Ok(());
+    }
+
+    println!("Segments:");
+    for (idx, segment) in task.segments.iter_mut().enumerate() {
+        let start_label = format_datetime_local(segment.start_at);
+        if let Some(input) = prompt_optional(&format!(
+            "Segment {} start [{}] (RFC3339/now): ",
+            idx + 1,
+            start_label
+        ))? {
+            segment.start_at = parse_datetime_input(&input, now, "segment start")?;
+        }
+
+        let end_label = match segment.end_at {
+            Some(end_at) => format_datetime_local(end_at),
+            None => "open".to_string(),
+        };
+        if let Some(input) = prompt_optional(&format!(
+            "Segment {} end [{}] (RFC3339/now/open): ",
+            idx + 1,
+            end_label
+        ))? {
+            segment.end_at = parse_optional_datetime_input(&input, now, "segment end")?;
+        }
+    }
+
+    Ok(())
+}
+
+fn apply_task_edits(
+    task: &mut Task,
+    name: Option<String>,
+    created_at: Option<String>,
+    closed_at: Option<String>,
+    segment_edits: Vec<String>,
+    now: DateTime<Utc>,
+) -> Result<(), String> {
+    if let Some(name) = name {
+        if name.trim().is_empty() {
+            return Err("Task name cannot be empty.".into());
+        }
+        task.name = name;
+    }
+
+    if let Some(created_at) = created_at {
+        task.created_at = parse_datetime_input(&created_at, now, "created at")?;
+    }
+
+    if let Some(closed_at) = closed_at {
+        task.closed_at = parse_optional_datetime_input(&closed_at, now, "closed at")?;
+    }
+
+    for edit in segment_edits {
+        let (index, start_at, end_at) = parse_segment_edit(&edit, now)?;
+        if index == 0 || index > task.segments.len() {
+            return Err(format!(
+                "Segment index must be between 1 and {}.",
+                task.segments.len()
+            ));
+        }
+        let segment = &mut task.segments[index - 1];
+        segment.start_at = start_at;
+        segment.end_at = end_at;
+    }
+
+    Ok(())
+}
+
+fn parse_segment_edit(
+    input: &str,
+    now: DateTime<Utc>,
+) -> Result<(usize, DateTime<Utc>, Option<DateTime<Utc>>), String> {
+    let parts: Vec<&str> = input.splitn(3, ',').collect();
+    if parts.len() != 3 {
+        return Err("Segment edit must be in the form INDEX,START,END.".into());
+    }
+    let index: usize = parts[0]
+        .parse()
+        .map_err(|_| "Segment index must be a number.".to_string())?;
+    let start_at = parse_datetime_input(parts[1], now, "segment start")?;
+    let end_at = parse_optional_datetime_input(parts[2], now, "segment end")?;
+    Ok((index, start_at, end_at))
+}
+
+fn parse_datetime_input(
+    input: &str,
+    now: DateTime<Utc>,
+    label: &str,
+) -> Result<DateTime<Utc>, String> {
+    if input.eq_ignore_ascii_case("now") {
+        return Ok(now);
+    }
+    DateTime::parse_from_rfc3339(input)
+        .map(|dt| dt.with_timezone(&Utc))
+        .map_err(|err| format!("Invalid {} timestamp: {}", label, err))
+}
+
+fn parse_optional_datetime_input(
+    input: &str,
+    now: DateTime<Utc>,
+    label: &str,
+) -> Result<Option<DateTime<Utc>>, String> {
+    if input.eq_ignore_ascii_case("open") || input.eq_ignore_ascii_case("none") {
+        return Ok(None);
+    }
+    parse_datetime_input(input, now, label).map(Some)
+}
+
+fn format_datetime_local(dt: DateTime<Utc>) -> String {
+    dt.with_timezone(&Local).to_rfc3339()
+}
+
+fn prompt_line(message: &str) -> Result<String, String> {
+    print!("{}", message);
+    io::stdout().flush().map_err(|err| err.to_string())?;
+    let mut input = String::new();
+    io::stdin()
+        .read_line(&mut input)
+        .map_err(|err| err.to_string())?;
+    Ok(input.trim().to_string())
+}
+
+fn prompt_optional(message: &str) -> Result<Option<String>, String> {
+    let input = prompt_line(message)?;
+    if input.trim().is_empty() {
+        Ok(None)
+    } else {
+        Ok(Some(input))
+    }
 }
 
 #[cfg(test)]
