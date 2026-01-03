@@ -1,4 +1,4 @@
-# Detailed Design Document (DR)
+# Detailed Design Document (DDD)
 
 ## System Architecture
 
