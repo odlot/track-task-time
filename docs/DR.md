@@ -1,4 +1,4 @@
-# Detailed Design Document (DDD)
+# Detailed Design Document (DR)
 
 ## System Architecture
 
@@ -20,7 +20,7 @@ Flow:
 
 ## Technology Stack
 
-- Language: Rust 2021 edition.
+- Language: Rust 2024 edition.
 - CLI parsing: `clap` (derive).
 - Time handling: `chrono` with local and UTC conversions.
 - JSON serialization: `serde` + `serde_json`.
