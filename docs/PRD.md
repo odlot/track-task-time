@@ -50,7 +50,7 @@ People who work across multiple tasks need a lightweight way to track time witho
 - Check status
   - Run `ttt status` to view the current task and elapsed time.
 - Get a daily report
-  - Run `ttt report` to see entries with start/end times for today.
+  - Run `ttt report` to see the date header and entries with start/end times for today.
 - Edit a task
   - Run `ttt edit` and select a task from the list.
   - Update the task name and timestamps interactively, or use flags.

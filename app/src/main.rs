@@ -206,11 +206,13 @@ fn main() {
                 println!("No entries for today.");
                 return;
             }
+            let report_date = now.with_timezone(&Local).date_naive();
+            println!("{}", report_date);
             for entry in report {
                 println!(
-                    "{} to {} — {} ({})",
-                    format_datetime_local_display(entry.start_at),
-                    format_datetime_local_display(entry.end_at),
+                    "{} - {} - {} ({})",
+                    format_time_local_display(entry.start_at),
+                    format_time_local_display(entry.end_at),
                     entry.name,
                     format_duration(entry.seconds)
                 );
@@ -701,10 +703,8 @@ fn format_datetime_local(dt: DateTime<Utc>) -> String {
     dt.with_timezone(&Local).to_rfc3339()
 }
 
-fn format_datetime_local_display(dt: DateTime<Utc>) -> String {
-    dt.with_timezone(&Local)
-        .format("%Y-%m-%d %H:%M:%S")
-        .to_string()
+fn format_time_local_display(dt: DateTime<Utc>) -> String {
+    dt.with_timezone(&Local).format("%H:%M:%S").to_string()
 }
 
 fn prompt_line(message: &str) -> Result<String, String> {
