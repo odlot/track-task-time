@@ -208,10 +208,10 @@ fn main() {
             }
             for entry in report {
                 println!(
-                    "{} — {} to {} ({})",
-                    entry.name,
+                    "{} to {} — {} ({})",
                     format_datetime_local_display(entry.start_at),
                     format_datetime_local_display(entry.end_at),
+                    entry.name,
                     format_duration(entry.seconds)
                 );
             }
