@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Report ordering now uses the latest end time for most-recent-first output.
+
+### Changed
+
+- Report output now prints times before the task name and duration.
+- Report output includes a date header and shows time-only ranges.
+
 ## [v0.1.1] - 2026-01-03
 
 ### Added

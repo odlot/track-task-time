@@ -64,7 +64,7 @@ ttt edit
 ### Output Format
 
 - Durations are printed as `HH:MM:SS`.
-- Report lines look like `Task Name - 2026-01-03 09:00:00 to 2026-01-03 10:12:05 (01:12:05)`.
+- Report output starts with the date, then lines like `09:00:00 - 10:12:05 - Task Name (01:12:05)`.
 
 ## Development Setup
 

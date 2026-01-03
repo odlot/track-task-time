@@ -74,7 +74,7 @@ CLI commands and flags:
   - Interactive task selection with prompts to edit names and times.
   - Flags: `--id`, `--index`, `--name`, `--created-at`, `--closed-at`, `--segment-edit`.
 - `ttt report`
-  - Prints today's entries with start/end times (most recent first).
+  - Prints a date header and today's entries with start/end times (most recent first).
 - Global flag: `--data-file <path>` overrides the default data location.
 
 Exit behavior:
