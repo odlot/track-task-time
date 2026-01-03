@@ -8,6 +8,7 @@
 - `docs/` contains the product requirements and detailed design documents.
 - `.github/workflows/ci.yml` runs Rust formatting and tests on pushes and PRs.
 - `.github/workflows/release.yml` builds binaries and publishes a GitHub release on `v*.*.*` tags.
+- `.pre-commit-config.yaml` runs Rust formatting, check, and clippy before commits.
 - `app/target/` is build output and should not be committed.
 
 ## Build, Test, and Development Commands
@@ -16,6 +17,7 @@
 - Run tests: `cd app && cargo test`
 - Check formatting: `cd app && cargo fmt --check`
 - Run linting: `cd app && cargo clippy -- -D warnings`
+- Pre-commit hooks: `pre-commit install` then `pre-commit run --all-files`
 - Build container: `docker build . -t track-task-time:0.1.3`
 - Run container: `docker container run -d -it --rm --mount type=bind,src=./,dst=/app track-task-time:0.1.4 bash`
 - Release process: update `CHANGELOG.md` and `app/Cargo.toml` version, then tag `vX.Y.Z` and push the tag.

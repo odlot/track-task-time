@@ -109,6 +109,8 @@ struct ReportEntry {
     seconds: i64,
 }
 
+type SegmentEdit = (usize, DateTime<Utc>, Option<DateTime<Utc>>);
+
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 enum TaskState {
     Active,
@@ -659,10 +661,7 @@ fn apply_task_edits(
     Ok(())
 }
 
-fn parse_segment_edit(
-    input: &str,
-    now: DateTime<Utc>,
-) -> Result<(usize, DateTime<Utc>, Option<DateTime<Utc>>), String> {
+fn parse_segment_edit(input: &str, now: DateTime<Utc>) -> Result<SegmentEdit, String> {
     let parts: Vec<&str> = input.splitn(3, ',').collect();
     if parts.len() != 3 {
         return Err("Segment edit must be in the form INDEX,START,END.".into());
