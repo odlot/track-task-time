@@ -70,6 +70,19 @@ cargo test
 
 Unit tests cover formatting and aggregation logic.
 
+## Release Process
+
+1) Update `app/Cargo.toml` version and add entries to `CHANGELOG.md`.
+2) Commit the changes to `main`.
+3) Create and push a tag:
+
+```bash
+git tag vX.Y.Z
+git push origin vX.Y.Z
+```
+
+Pushing the tag triggers the GitHub Actions release workflow to build binaries and publish release notes from the changelog.
+
 ### Building the container image
 
 ```bash
