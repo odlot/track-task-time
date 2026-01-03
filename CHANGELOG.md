@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [v0.1.1] - 2026-01-03
+
 ### Added
 
 - `edit` command to rename tasks and adjust time segments.
