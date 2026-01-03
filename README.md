@@ -50,9 +50,11 @@ ttt edit
 
 ### Editing Tasks
 
-- Interactive edit: `ttt edit`
-- Rename by id: `ttt edit --id <TASK_ID> --name "New name"`
-- Adjust a segment time: `ttt edit --id <TASK_ID> --segment-edit 1,2026-01-03T12:00:00Z,open`
+- Interactive edit: `ttt edit` (select from list, then edit name/times).
+- Rename by id: `ttt edit --id <TASK_ID> --name "New name"`.
+- Edit by index: `ttt edit --index 2 --name "New name"`.
+- Adjust task timestamps: `ttt edit --id <TASK_ID> --created-at 2026-01-03T12:00:00Z --closed-at open`.
+- Adjust a segment time: `ttt edit --id <TASK_ID> --segment-edit 1,2026-01-03T12:00:00Z,open`.
 
 ### Data File
 

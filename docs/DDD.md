@@ -8,6 +8,7 @@ High-level components:
 
 - CLI interface (argument parsing and command dispatch).
 - Task state manager (start, stop, pause, resume).
+- Task editor (interactive selection and edits via flags).
 - Reporting engine (daily totals by task name).
 - Storage layer (load/save JSON store).
 
@@ -67,6 +68,11 @@ CLI commands and flags:
   - Resumes the paused task.
 - `ttt status`
   - Shows current task and elapsed time.
+- `ttt location`
+  - Prints the resolved data file path.
+- `ttt edit`
+  - Interactive task selection with prompts to edit names and times.
+  - Flags: `--id`, `--index`, `--name`, `--created-at`, `--closed-at`, `--segment-edit`.
 - `ttt report`
   - Prints today totals by task name.
 - Global flag: `--data-file <path>` overrides the default data location.
@@ -80,6 +86,7 @@ Exit behavior:
 - Default path: OS-specific user data directory via `directories`.
 - Format: pretty-printed JSON for readability.
 - Persistence: write file on state changes (start/stop/pause/resume).
+- Edits update task metadata and segment timestamps in-place.
 
 ## Scalability Considerations
 
