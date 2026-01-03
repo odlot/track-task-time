@@ -2,7 +2,7 @@
 
 ## Overview
 
-`ttt` is a small, cross-platform CLI for tracking task time. It supports explicit start/stop and pause/resume commands, stores data locally in JSON, and reports daily totals.
+`ttt` is a small, cross-platform CLI for tracking task time. It supports explicit start/stop and pause/resume commands, stores data locally in JSON, reports daily totals, and lets users edit task names and times.
 
 ## Problem Statement
 
@@ -34,6 +34,8 @@ People who work across multiple tasks need a lightweight way to track time witho
 - Show current status and elapsed time.
 - Generate a daily report aggregated by task name (case-insensitive).
 - Store data locally in a JSON file with an override flag.
+- Edit task names and timestamps after the fact.
+- Show the resolved data file location.
 
 ## User Flows
 
@@ -49,6 +51,11 @@ People who work across multiple tasks need a lightweight way to track time witho
   - Run `ttt status` to view the current task and elapsed time.
 - Get a daily report
   - Run `ttt report` to see totals for today.
+- Edit a task
+  - Run `ttt edit` and select a task from the list.
+  - Update the task name and timestamps interactively, or use flags.
+- Find the data file
+  - Run `ttt location` to print the data file path.
 
 ## Success Criteria
 
@@ -56,6 +63,7 @@ People who work across multiple tasks need a lightweight way to track time witho
 - Data is stored locally in a single JSON file with no network access.
 - Daily report output is stable and deterministic for the same input.
 - Command errors are actionable and guide users to the next step.
+- Users can correct task names and timing without editing JSON by hand.
 
 ## Assumptions and Constraints
 

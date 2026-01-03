@@ -31,6 +31,8 @@ ttt [--data-file <path>] <command>
 - `pause`: Pause the active task.
 - `resume`: Resume the paused task.
 - `status`: Show the current task and elapsed time.
+- `location`: Show the data file location.
+- `edit`: Edit a task name or time segments (interactive list by default).
 - `report`: Show today’s totals (default: today).
 
 ### Examples
@@ -42,7 +44,17 @@ ttt resume
 ttt status
 ttt report
 ttt stop
+ttt location
+ttt edit
 ```
+
+### Editing Tasks
+
+- Interactive edit: `ttt edit` (select from list, then edit name/times).
+- Rename by id: `ttt edit --id <TASK_ID> --name "New name"`.
+- Edit by index: `ttt edit --index 2 --name "New name"`.
+- Adjust task timestamps: `ttt edit --id <TASK_ID> --created-at 2026-01-03T12:00:00Z --closed-at open`.
+- Adjust a segment time: `ttt edit --id <TASK_ID> --segment-edit 1,2026-01-03T12:00:00Z,open`.
 
 ### Data File
 
