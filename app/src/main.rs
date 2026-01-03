@@ -10,9 +10,17 @@ use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
 #[derive(Parser)]
-#[command(name = "ttt", about = "track task time")]
+#[command(
+    name = "ttt",
+    about = "Track task time from the command line",
+    after_help = "Examples:\n  ttt start \"Write docs\"\n  ttt pause\n  ttt resume\n  ttt status\n  ttt report\n  ttt stop"
+)]
 struct Cli {
-    #[arg(long = "data-file", value_name = "path")]
+    #[arg(
+        long = "data-file",
+        value_name = "PATH",
+        help = "Override the default data file location"
+    )]
     data_file: Option<PathBuf>,
     #[command(subcommand)]
     command: Command,
@@ -20,15 +28,22 @@ struct Cli {
 
 #[derive(Subcommand)]
 enum Command {
+    #[command(about = "Start tracking a task")]
     Start {
+        #[arg(value_name = "TASK", help = "Task name to track")]
         task: String,
     },
+    #[command(about = "Stop the active or paused task")]
     Stop,
+    #[command(about = "Pause the active task")]
     Pause,
+    #[command(about = "Resume the paused task")]
     Resume,
+    #[command(about = "Show the current task and elapsed time")]
     Status,
+    #[command(about = "Show today's totals (default)")]
     Report {
-        #[arg(long)]
+        #[arg(long, help = "Report today's totals (default)")]
         today: bool,
     },
 }
