@@ -7,6 +7,7 @@
 - `app/` contains the Rust CLI crate (`Cargo.toml`, `Cargo.lock`, `src/`).
 - `docs/` contains the product requirements and detailed design documents.
 - `.github/workflows/ci.yml` runs Rust formatting and tests on pushes and PRs.
+- `.github/workflows/release.yml` builds binaries and publishes a GitHub release on `v*.*.*` tags.
 - `app/target/` is build output and should not be committed.
 
 ## Build, Test, and Development Commands
@@ -17,6 +18,7 @@
 - Run linting: `cd app && cargo clippy -- -D warnings`
 - Build container: `docker build . -t track-task-time:0.1.3`
 - Run container: `docker container run -d -it --rm --mount type=bind,src=./,dst=/app track-task-time:0.1.4 bash`
+- Release process: update `CHANGELOG.md` and `app/Cargo.toml` version, then tag `vX.Y.Z` and push the tag.
 
 ## Coding Style & Naming Conventions
 
