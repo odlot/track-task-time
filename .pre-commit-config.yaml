@@ -1,0 +1,18 @@
+repos:
+  - repo: local
+    hooks:
+      - id: cargo-fmt
+        name: cargo fmt (check)
+        entry: bash -c 'cd app && cargo fmt --check'
+        language: system
+        pass_filenames: false
+      - id: cargo-check
+        name: cargo check
+        entry: bash -c 'cd app && cargo check'
+        language: system
+        pass_filenames: false
+      - id: cargo-clippy
+        name: cargo clippy (deny warnings)
+        entry: bash -c 'cd app && cargo clippy -- -D warnings'
+        language: system
+        pass_filenames: false

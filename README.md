@@ -82,6 +82,29 @@ cargo test
 
 Unit tests cover formatting and aggregation logic.
 
+### Pre-commit Hooks
+
+Install pre-commit and enable the hooks:
+
+```bash
+. .venv/bin/activate
+pip install pre-commit
+pre-commit install
+```
+
+Run all hooks manually:
+
+```bash
+ . .venv/bin/activate
+pre-commit run --all-files
+```
+
+First-time setup for the virtual environment:
+
+```bash
+python3 -m venv .venv
+```
+
 ## Release Process
 
 1) Update `app/Cargo.toml` version and add entries to `CHANGELOG.md`.
