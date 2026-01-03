@@ -17,7 +17,7 @@
 - Run tests: `cd app && cargo test`
 - Check formatting: `cd app && cargo fmt --check`
 - Run linting: `cd app && cargo clippy -- -D warnings`
-- Pre-commit hooks: `pre-commit install` then `pre-commit run --all-files`
+- Pre-commit hooks: `python3 -m venv .venv`, then `. .venv/bin/activate`, `pip install pre-commit`, `pre-commit install`
 - Build container: `docker build . -t track-task-time:0.1.3`
 - Run container: `docker container run -d -it --rm --mount type=bind,src=./,dst=/app track-task-time:0.1.4 bash`
 - Release process: update `CHANGELOG.md` and `app/Cargo.toml` version, then tag `vX.Y.Z` and push the tag.

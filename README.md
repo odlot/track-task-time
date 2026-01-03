@@ -87,14 +87,22 @@ Unit tests cover formatting and aggregation logic.
 Install pre-commit and enable the hooks:
 
 ```bash
-pip install --user pre-commit
+. .venv/bin/activate
+pip install pre-commit
 pre-commit install
 ```
 
 Run all hooks manually:
 
 ```bash
+ . .venv/bin/activate
 pre-commit run --all-files
+```
+
+First-time setup for the virtual environment:
+
+```bash
+python3 -m venv .venv
 ```
 
 ## Release Process
