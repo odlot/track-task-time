@@ -109,7 +109,7 @@ Exit behavior:
 - Format: encrypted JSON envelope with salt, nonce, and ciphertext.
 - Persistence: write file on state changes (start/stop/pause/resume).
 - Edits update task metadata and segment timestamps in-place.
-- Passphrase is required on every run; `TTT_PASSPHRASE` can be used for automation.
+- Passphrase is required on every run.
 - File permissions are set to owner-only when supported.
 
 ## Encryption

@@ -38,7 +38,7 @@ People who work across multiple tasks need a lightweight way to track time witho
 - Generate a daily report listing tasks with start/end times (most recent first).
 - Show totals at the end of list and report output.
 - Store data locally in an encrypted JSON file with an override flag.
-- Encrypt the on-disk data with a user-provided passphrase.
+- Encrypt the on-disk data with a user-provided passphrase entered at runtime.
 - Edit task names and timestamps after the fact.
 - Show the resolved data file location.
 - List tasks with totals and IDs, with optional date filters.

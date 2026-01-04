@@ -45,7 +45,7 @@
 - Keep `CHANGELOG.md`, `app/Cargo.toml`, and tags aligned for releases.
 - Update README/PRD/DDD when CLI behavior or commands change.
 - Prefer small, focused PRs to keep reviews fast and CI reliable.
-- Never log or print passphrases; use `TTT_PASSPHRASE` only for automation.
+- Never log or print passphrases.
 
 ## UX Guidelines
 

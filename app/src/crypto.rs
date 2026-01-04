@@ -1,5 +1,3 @@
-use std::env;
-
 use argon2::{Algorithm, Argon2, Params, Version};
 use base64::{Engine as _, engine::general_purpose};
 use chacha20poly1305::aead::{Aead, KeyInit};
@@ -33,13 +31,6 @@ struct KdfConfig {
 }
 
 pub fn read_passphrase(confirm: bool) -> Result<String, String> {
-    if let Ok(passphrase) = env::var("TTT_PASSPHRASE") {
-        if passphrase.trim().is_empty() {
-            return Err("TTT_PASSPHRASE is set but empty.".into());
-        }
-        return Ok(passphrase);
-    }
-
     let passphrase = rpassword::prompt_password("Passphrase: ").map_err(|err| err.to_string())?;
     if passphrase.trim().is_empty() {
         return Err("Passphrase cannot be empty.".into());

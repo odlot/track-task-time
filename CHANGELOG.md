@@ -12,7 +12,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Encrypted data file with passphrase prompts on each run.
-- `TTT_PASSPHRASE` support for non-interactive usage.
 
 ## [v0.4.0] - 2026-01-04
 

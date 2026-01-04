@@ -69,8 +69,7 @@ ttt stop
 - Default location: OS-specific user data directory, e.g. `~/.local/share/ttt/ttt.json` on Linux.
 - Override with `--data-file /path/to/ttt.json`.
 - File contents are encrypted with a passphrase.
-- Set `TTT_PASSPHRASE` for non-interactive usage.
-- The CLI prompts for the passphrase on each run unless `TTT_PASSPHRASE` is set.
+- The CLI prompts for the passphrase on each run.
 
 ### Output Format
 
