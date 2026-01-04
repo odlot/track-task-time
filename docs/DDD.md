@@ -71,7 +71,8 @@ Notes:
 
 CLI commands and flags:
 
-- `ttt start <task>`
+- `ttt start [task]`
+  - Prompts for a task name if omitted.
   - Prompts to stop an existing active or paused task.
 - `ttt stop`
   - Stops the active or paused task.
@@ -85,12 +86,14 @@ CLI commands and flags:
   - Prints the resolved data file path.
 - `ttt list`
   - Lists tasks with totals and IDs (filters: `--today`, `--week`).
+  - Prints a total line for the selected window.
 - `ttt edit`
   - Interactive task selection with prompts to edit names and times.
   - Flags: `--id`, `--index`, `--name`, `--created-at`, `--closed-at`, `--segment-edit`.
 - `ttt report`
   - Prints a date header and today's entries with start/end times (most recent first).
   - Output format: `HH:MM:SS - HH:MM:SS - Task Name (HH:MM:SS)`.
+  - Prints a total line after the entries.
 - Global flag: `--data-file <path>` overrides the default data location.
 
 Exit behavior:

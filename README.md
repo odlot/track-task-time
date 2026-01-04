@@ -26,7 +26,7 @@ ttt [--data-file <path>] <command>
 
 ### Command Reference
 
-- `start <task>`: Start tracking a task. Prompts if a task is active or paused.
+- `start [task]`: Start tracking a task. Prompts for a name if omitted.
 - `stop`: Stop the active or paused task.
 - `pause`: Pause the active task.
 - `resume`: Resume the paused task.
@@ -71,7 +71,8 @@ ttt stop
 ### Output Format
 
 - Durations are printed as `HH:MM:SS`.
-- Report output starts with the date, then lines like `09:00:00 - 10:12:05 - Task Name (01:12:05)`.
+- Report output starts with the date, then lines like `09:00:00 - 10:12:05 - Task Name (01:12:05)`, followed by a total line.
+- List output ends with a total line for the selected window.
 
 ## Development Setup
 

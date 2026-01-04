@@ -30,10 +30,12 @@ People who work across multiple tasks need a lightweight way to track time witho
 ## Key Features
 
 - Start a single active task with a name.
+- Prompt for a task name when starting without arguments.
 - Pause and resume without splitting into separate tasks.
 - Stop and close a task explicitly.
 - Show current status and elapsed time.
 - Generate a daily report listing tasks with start/end times (most recent first).
+- Show totals at the end of list and report output.
 - Store data locally in a JSON file with an override flag.
 - Edit task names and timestamps after the fact.
 - Show the resolved data file location.
