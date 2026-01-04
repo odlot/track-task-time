@@ -23,8 +23,8 @@ pub struct Cli {
 pub enum Command {
     #[command(about = "Start tracking a task")]
     Start {
-        #[arg(value_name = "TASK", help = "Task name to track")]
-        task: String,
+        #[arg(value_name = "TASK", help = "Task name to track (prompted if omitted)")]
+        task: Option<String>,
     },
     #[command(about = "Stop the active or paused task")]
     Stop,

@@ -14,8 +14,8 @@ use clap::Parser;
 use crate::cli::{Cli, Command};
 use crate::edit::{apply_task_edits, edit_task_interactive, resolve_task_index};
 use crate::list::{ListWindow, list_header, list_tasks};
-use crate::model::TaskState;
-use crate::prompt::prompt_yes_no;
+use crate::model::{Task, TaskState};
+use crate::prompt::{prompt_required, prompt_yes_no};
 use crate::report::report_today;
 use crate::storage::{data_file_path, load_store, save_store};
 use crate::tasks::{
@@ -37,16 +37,22 @@ fn main() {
 
     match cli.command {
         Command::Start { task } => {
+            let task_name = match task {
+                Some(name) if !name.trim().is_empty() => name,
+                Some(_) => exit_with_error("Task name cannot be empty."),
+                None => prompt_required("Task name: ", "Task name")
+                    .unwrap_or_else(|err| exit_with_error(&err)),
+            };
             if let Some((idx, state)) = current_task_state(&store) {
                 let existing_name = store.tasks[idx].name.clone();
                 let prompt = match state {
                     TaskState::Active => format!(
                         "Active task \"{}\" is running. Stop it and start \"{}\"? [y/N] ",
-                        existing_name, task
+                        existing_name, task_name
                     ),
                     TaskState::Paused => format!(
                         "Task \"{}\" is paused. Abandon it and start \"{}\"? [y/N] ",
-                        existing_name, task
+                        existing_name, task_name
                     ),
                 };
                 if !prompt_yes_no(&prompt) {
@@ -54,13 +60,26 @@ fn main() {
                 }
                 stop_task(&mut store, idx, now);
             }
-            start_task(&mut store, task, now);
+            start_task(&mut store, task_name.clone(), now);
             save_store(&data_file, &store).unwrap_or_else(|err| exit_with_error(&err));
+            println!(
+                "Started: {} at {}",
+                task_name,
+                format_time_local_display(now)
+            );
         }
         Command::Stop => {
             if let Some((idx, _)) = current_task_state(&store) {
+                let task_name = store.tasks[idx].name.clone();
                 stop_task(&mut store, idx, now);
+                let elapsed = total_elapsed(&store.tasks[idx], now);
                 save_store(&data_file, &store).unwrap_or_else(|err| exit_with_error(&err));
+                println!(
+                    "Stopped: {} at {} (total {})",
+                    task_name,
+                    format_time_local_display(now),
+                    format_duration(elapsed)
+                );
             } else {
                 exit_with_error("No active or paused task. Start one with \"ttt start <task>\".");
             }
@@ -68,8 +87,16 @@ fn main() {
         Command::Pause => {
             if let Some((idx, state)) = current_task_state(&store) {
                 if state == TaskState::Active {
+                    let task_name = store.tasks[idx].name.clone();
                     pause_task(&mut store, idx, now);
+                    let elapsed = total_elapsed(&store.tasks[idx], now);
                     save_store(&data_file, &store).unwrap_or_else(|err| exit_with_error(&err));
+                    println!(
+                        "Paused: {} at {} (total {})",
+                        task_name,
+                        format_time_local_display(now),
+                        format_duration(elapsed)
+                    );
                 } else {
                     exit_with_error("Task is already paused. Resume it with \"ttt resume\".");
                 }
@@ -79,8 +106,14 @@ fn main() {
         }
         Command::Resume => match current_task_state(&store) {
             Some((idx, TaskState::Paused)) => {
+                let task_name = store.tasks[idx].name.clone();
                 resume_task(&mut store, idx, now);
                 save_store(&data_file, &store).unwrap_or_else(|err| exit_with_error(&err));
+                println!(
+                    "Resumed: {} at {}",
+                    task_name,
+                    format_time_local_display(now)
+                );
             }
             Some((_, TaskState::Active)) => {
                 let active_name = active_task_name(&store).unwrap_or_default();
@@ -97,14 +130,26 @@ fn main() {
             Some((idx, TaskState::Active)) => {
                 let task = &store.tasks[idx];
                 let elapsed = total_elapsed(task, now);
-                println!("Active: {} — {}", task.name, format_duration(elapsed));
+                let started_at = active_segment_start(task).unwrap_or(task.created_at);
+                println!(
+                    "Active: {} - {} (since {})",
+                    task.name,
+                    format_duration(elapsed),
+                    format_time_local_display(started_at)
+                );
             }
             Some((idx, TaskState::Paused)) => {
                 let task = &store.tasks[idx];
                 let elapsed = total_elapsed(task, now);
-                println!("Paused: {} — {}", task.name, format_duration(elapsed));
+                let paused_at = last_segment_end(task).unwrap_or(task.created_at);
+                println!(
+                    "Paused: {} - {} (paused at {})",
+                    task.name,
+                    format_duration(elapsed),
+                    format_time_local_display(paused_at)
+                );
             }
-            None => println!("No active task."),
+            None => println!("No active task. Start one with \"ttt start\"."),
         },
         Command::Location => {
             println!("{}", data_file.display());
@@ -128,6 +173,7 @@ fn main() {
             if let Some(header) = list_header(now, window) {
                 println!("{}", header);
             }
+            let total_seconds: i64 = entries.iter().map(|entry| entry.seconds).sum();
             for (idx, entry) in entries.iter().enumerate() {
                 println!(
                     "{:>3}) [{}] {} ({}) total {}",
@@ -138,6 +184,7 @@ fn main() {
                     format_duration(entry.seconds)
                 );
             }
+            println!("Total: {}", format_duration(total_seconds));
         }
         Command::Report { today: _ } => {
             let report = report_today(&store, now);
@@ -147,6 +194,7 @@ fn main() {
             }
             let report_date = now.with_timezone(&Local).date_naive();
             println!("{}", report_date);
+            let total_seconds: i64 = report.iter().map(|entry| entry.seconds).sum();
             for entry in report {
                 println!(
                     "{} - {} - {} ({})",
@@ -156,6 +204,7 @@ fn main() {
                     format_duration(entry.seconds)
                 );
             }
+            println!("Total: {}", format_duration(total_seconds));
         }
         Command::Edit {
             id,
@@ -191,4 +240,18 @@ fn main() {
 fn exit_with_error(message: &str) -> ! {
     eprintln!("{}", message);
     std::process::exit(2);
+}
+
+fn active_segment_start(task: &Task) -> Option<chrono::DateTime<Utc>> {
+    task.segments
+        .iter()
+        .find(|segment| segment.end_at.is_none())
+        .map(|segment| segment.start_at)
+}
+
+fn last_segment_end(task: &Task) -> Option<chrono::DateTime<Utc>> {
+    task.segments
+        .iter()
+        .rev()
+        .find_map(|segment| segment.end_at)
 }

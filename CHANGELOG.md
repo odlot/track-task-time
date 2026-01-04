@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [v0.4.0] - 2026-01-04
+
+### Added
+
+- Prompt for a task name when `ttt start` is called without arguments.
+- Totals at the end of list and report output.
+
+### Changed
+
+- Status output now includes the start or pause time.
+- Start/pause/resume/stop commands print confirmations with timing.
+
 ## [v0.3.1] - 2026-01-04
 
 ### Changed

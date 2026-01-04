@@ -29,3 +29,13 @@ pub fn prompt_optional(message: &str) -> Result<Option<String>, String> {
         Ok(Some(input))
     }
 }
+
+pub fn prompt_required(message: &str, label: &str) -> Result<String, String> {
+    loop {
+        let input = prompt_line(message)?;
+        if !input.trim().is_empty() {
+            return Ok(input);
+        }
+        println!("{} cannot be empty.", label);
+    }
+}
