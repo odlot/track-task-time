@@ -75,6 +75,16 @@ pub fn total_elapsed(task: &Task, now: DateTime<Utc>) -> i64 {
         .sum()
 }
 
+pub fn task_status(task: &Task) -> &'static str {
+    if task.segments.iter().any(|seg| seg.end_at.is_none()) {
+        "active"
+    } else if task.closed_at.is_none() && !task.segments.is_empty() {
+        "paused"
+    } else {
+        "stopped"
+    }
+}
+
 fn segment_duration(segment: &Segment, now: DateTime<Utc>) -> i64 {
     let end = segment.end_at.unwrap_or(now);
     let duration = end - segment.start_at;

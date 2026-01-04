@@ -36,6 +36,13 @@ pub enum Command {
     Status,
     #[command(about = "Show the data file location")]
     Location,
+    #[command(about = "List tasks and totals")]
+    List {
+        #[arg(long, help = "Only tasks with activity today")]
+        today: bool,
+        #[arg(long, help = "Only tasks with activity this week")]
+        week: bool,
+    },
     #[command(about = "Show today's totals (default)")]
     Report {
         #[arg(long, help = "Report today's totals (default)")]

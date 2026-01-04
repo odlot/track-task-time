@@ -2,7 +2,7 @@ use chrono::{DateTime, Utc};
 
 use crate::model::{SegmentEdit, Store, Task};
 use crate::prompt::{prompt_line, prompt_optional};
-use crate::tasks::total_elapsed;
+use crate::tasks::{task_status, total_elapsed};
 use crate::time::{format_datetime_local, format_duration};
 
 pub fn resolve_task_index(
@@ -74,16 +74,6 @@ fn prompt_task_selection(store: &Store, now: DateTime<Utc>) -> Result<usize, Str
 
 fn short_id(id: &str) -> &str {
     if id.len() > 8 { &id[..8] } else { id }
-}
-
-fn task_status(task: &Task) -> &'static str {
-    if task.segments.iter().any(|seg| seg.end_at.is_none()) {
-        "active"
-    } else if task.closed_at.is_none() && !task.segments.is_empty() {
-        "paused"
-    } else {
-        "stopped"
-    }
 }
 
 pub fn edit_task_interactive(task: &mut Task, now: DateTime<Utc>) -> Result<(), String> {

@@ -1,5 +1,6 @@
 mod cli;
 mod edit;
+mod list;
 mod model;
 mod prompt;
 mod report;
@@ -12,6 +13,7 @@ use clap::Parser;
 
 use crate::cli::{Cli, Command};
 use crate::edit::{apply_task_edits, edit_task_interactive, resolve_task_index};
+use crate::list::{ListWindow, list_header, list_tasks};
 use crate::model::TaskState;
 use crate::prompt::prompt_yes_no;
 use crate::report::report_today;
@@ -106,6 +108,36 @@ fn main() {
         },
         Command::Location => {
             println!("{}", data_file.display());
+        }
+        Command::List { today, week } => {
+            if today && week {
+                exit_with_error("Use either --today or --week, not both.");
+            }
+            let window = if today {
+                ListWindow::Today
+            } else if week {
+                ListWindow::Week
+            } else {
+                ListWindow::All
+            };
+            let entries = list_tasks(&store, now, window);
+            if entries.is_empty() {
+                println!("No matching tasks.");
+                return;
+            }
+            if let Some(header) = list_header(now, window) {
+                println!("{}", header);
+            }
+            for (idx, entry) in entries.iter().enumerate() {
+                println!(
+                    "{:>3}) [{}] {} ({}) total {}",
+                    idx + 1,
+                    entry.status,
+                    entry.name,
+                    entry.id,
+                    format_duration(entry.seconds)
+                );
+            }
         }
         Command::Report { today: _ } => {
             let report = report_today(&store, now);

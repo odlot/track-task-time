@@ -32,6 +32,7 @@ ttt [--data-file <path>] <command>
 - `resume`: Resume the paused task.
 - `status`: Show the current task and elapsed time.
 - `location`: Show the data file location.
+- `list`: List tasks and totals (use `--today` or `--week` to filter).
 - `edit`: Edit a task name or time segments (interactive list by default).
 - `report`: Show today’s entries with start/end times (default: today).
 
@@ -46,7 +47,14 @@ ttt report
 ttt stop
 ttt location
 ttt edit
+ttt list
 ```
+
+### Listing Tasks
+
+- All tasks: `ttt list`
+- Only today: `ttt list --today`
+- This week: `ttt list --week`
 
 ### Editing Tasks
 
