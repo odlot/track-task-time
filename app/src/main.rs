@@ -33,12 +33,28 @@ fn main() {
     let now = Utc::now();
     let command = cli.command;
 
+    let data_exists = data_file.exists();
+
     if matches!(&command, Command::Location) {
         println!("{}", data_file.display());
         return;
     }
     if matches!(&command, Command::Version) {
         println!("ttt {}", env!("CARGO_PKG_VERSION"));
+        return;
+    }
+    if matches!(&command, Command::Rekey) {
+        if !data_exists {
+            exit_with_error("No data file found. Start tracking with \"ttt start\" first.");
+        }
+        let current_passphrase = read_passphrase(false).unwrap_or_else(|err| exit_with_error(&err));
+        let store = match load_store(&data_file, &current_passphrase) {
+            Ok(store) => store,
+            Err(err) => exit_with_error(&err),
+        };
+        let new_passphrase = read_passphrase(true).unwrap_or_else(|err| exit_with_error(&err));
+        save_store(&data_file, &store, &new_passphrase).unwrap_or_else(|err| exit_with_error(&err));
+        println!("Passphrase updated for {}", data_file.display());
         return;
     }
 
@@ -50,7 +66,7 @@ fn main() {
             | Command::Resume
             | Command::Edit { .. }
     );
-    let is_new_store = !data_file.exists();
+    let is_new_store = !data_exists;
     let confirm_passphrase = will_write && is_new_store;
     let passphrase =
         read_passphrase(confirm_passphrase).unwrap_or_else(|err| exit_with_error(&err));
@@ -274,6 +290,7 @@ fn main() {
             }
         }
         Command::Location => {}
+        Command::Rekey => {}
         Command::Version => {}
     }
 }

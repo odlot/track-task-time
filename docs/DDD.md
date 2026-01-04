@@ -97,6 +97,8 @@ CLI commands and flags:
   - Prints a date header and today's entries with start/end times (most recent first).
   - Output format: `HH:MM:SS - HH:MM:SS - Task Name (HH:MM:SS)`.
   - Prints a total line after the entries.
+- `ttt rekey`
+  - Re-encrypts the data file with a new passphrase.
 - `ttt version`
   - Prints the CLI version.
 - Global flag: `--data-file <path>` overrides the default data location.
