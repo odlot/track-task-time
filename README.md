@@ -35,6 +35,7 @@ ttt [--data-file <path>] <command>
 - `list [--today|--week]`: List tasks and totals with optional date filters.
 - `edit [flags]`: Edit a task name or time segments (interactive list by default).
 - `report [--today]`: Show today's entries with start/end times (default: today).
+- `version`: Show the CLI version.
 
 ### Quick Start
 
@@ -46,6 +47,7 @@ ttt resume
 ttt status
 ttt report
 ttt stop
+ttt version
 ```
 
 ### Listing Tasks

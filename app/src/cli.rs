@@ -6,7 +6,7 @@ use clap::{Parser, Subcommand};
 #[command(
     name = "ttt",
     about = "Track task time from the command line",
-    after_help = "Examples:\n  ttt start \"Write docs\"\n  ttt pause\n  ttt resume\n  ttt status\n  ttt report\n  ttt stop\n  ttt location\n  ttt edit"
+    after_help = "Examples:\n  ttt start \"Write docs\"\n  ttt pause\n  ttt resume\n  ttt status\n  ttt report\n  ttt stop\n  ttt location\n  ttt edit\n  ttt version"
 )]
 pub struct Cli {
     #[arg(
@@ -79,4 +79,6 @@ pub enum Command {
         )]
         segment_edit: Vec<String>,
     },
+    #[command(about = "Show the CLI version")]
+    Version,
 }

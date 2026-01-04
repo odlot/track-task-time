@@ -37,6 +37,10 @@ fn main() {
         println!("{}", data_file.display());
         return;
     }
+    if matches!(&command, Command::Version) {
+        println!("ttt {}", env!("CARGO_PKG_VERSION"));
+        return;
+    }
 
     let will_write = matches!(
         &command,
@@ -46,7 +50,8 @@ fn main() {
             | Command::Resume
             | Command::Edit { .. }
     );
-    let confirm_passphrase = will_write && !data_file.exists();
+    let is_new_store = !data_file.exists();
+    let confirm_passphrase = will_write && is_new_store;
     let passphrase =
         read_passphrase(confirm_passphrase).unwrap_or_else(|err| exit_with_error(&err));
     let mut store = match load_store(&data_file, &passphrase) {
@@ -86,6 +91,9 @@ fn main() {
                 task_name,
                 format_time_local_display(now)
             );
+            if is_new_store {
+                println!("Created encrypted data file at {}", data_file.display());
+            }
         }
         Command::Stop => {
             if let Some((idx, _)) = current_task_state(&store) {
@@ -100,6 +108,9 @@ fn main() {
                     format_time_local_display(now),
                     format_duration(elapsed)
                 );
+                if is_new_store {
+                    println!("Created encrypted data file at {}", data_file.display());
+                }
             } else {
                 exit_with_error("No active or paused task. Start one with \"ttt start <task>\".");
             }
@@ -118,6 +129,9 @@ fn main() {
                         format_time_local_display(now),
                         format_duration(elapsed)
                     );
+                    if is_new_store {
+                        println!("Created encrypted data file at {}", data_file.display());
+                    }
                 } else {
                     exit_with_error("Task is already paused. Resume it with \"ttt resume\".");
                 }
@@ -136,6 +150,9 @@ fn main() {
                     task_name,
                     format_time_local_display(now)
                 );
+                if is_new_store {
+                    println!("Created encrypted data file at {}", data_file.display());
+                }
             }
             Some((_, TaskState::Active)) => {
                 let active_name = active_task_name(&store).unwrap_or_default();
@@ -252,8 +269,12 @@ fn main() {
             }
 
             save_store(&data_file, &store, &passphrase).unwrap_or_else(|err| exit_with_error(&err));
+            if is_new_store {
+                println!("Created encrypted data file at {}", data_file.display());
+            }
         }
         Command::Location => {}
+        Command::Version => {}
     }
 }
 

@@ -31,7 +31,12 @@ struct KdfConfig {
 }
 
 pub fn read_passphrase(confirm: bool) -> Result<String, String> {
-    let passphrase = rpassword::prompt_password("Passphrase: ").map_err(|err| err.to_string())?;
+    let prompt = if confirm {
+        "New passphrase: "
+    } else {
+        "Passphrase: "
+    };
+    let passphrase = rpassword::prompt_password(prompt).map_err(|err| err.to_string())?;
     if passphrase.trim().is_empty() {
         return Err("Passphrase cannot be empty.".into());
     }
