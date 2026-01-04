@@ -19,6 +19,7 @@ People who work across multiple tasks need a lightweight way to track time witho
 - Make it fast to start and stop tracking a task from the terminal.
 - Keep data local, portable, and human-readable.
 - Provide a simple daily report aggregated by task name.
+- Keep command output predictable and easy to scan.
 
 ## Non-Goals
 
@@ -68,6 +69,13 @@ People who work across multiple tasks need a lightweight way to track time witho
 - Command errors are actionable and guide users to the next step.
 - Users can correct task names and timing without editing JSON by hand.
 - Users can quickly find task IDs via the list output.
+
+## Quality and Release Practices
+
+- Pre-commit hooks catch fmt, check, and clippy issues before commits.
+- CI must be green before merging changes to main.
+- Release notes come from `CHANGELOG.md` and follow semantic versioning.
+- README, PRD, and DDD stay in sync when CLI behavior changes.
 
 ## Assumptions and Constraints
 
