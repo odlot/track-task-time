@@ -70,6 +70,8 @@ CLI commands and flags:
   - Shows current task and elapsed time.
 - `ttt location`
   - Prints the resolved data file path.
+- `ttt list`
+  - Lists tasks with totals and IDs (filters: `--today`, `--week`).
 - `ttt edit`
   - Interactive task selection with prompts to edit names and times.
   - Flags: `--id`, `--index`, `--name`, `--created-at`, `--closed-at`, `--segment-edit`.

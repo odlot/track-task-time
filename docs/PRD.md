@@ -36,6 +36,7 @@ People who work across multiple tasks need a lightweight way to track time witho
 - Store data locally in a JSON file with an override flag.
 - Edit task names and timestamps after the fact.
 - Show the resolved data file location.
+- List tasks with totals and IDs, with optional date filters.
 
 ## User Flows
 
@@ -56,6 +57,8 @@ People who work across multiple tasks need a lightweight way to track time witho
   - Update the task name and timestamps interactively, or use flags.
 - Find the data file
   - Run `ttt location` to print the data file path.
+- List tasks
+  - Run `ttt list` for all tasks or filter with `--today` / `--week`.
 
 ## Success Criteria
 
@@ -64,6 +67,7 @@ People who work across multiple tasks need a lightweight way to track time witho
 - Daily report output is stable and deterministic for the same input.
 - Command errors are actionable and guide users to the next step.
 - Users can correct task names and timing without editing JSON by hand.
+- Users can quickly find task IDs via the list output.
 
 ## Assumptions and Constraints
 
