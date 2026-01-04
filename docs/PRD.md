@@ -17,9 +17,10 @@ People who work across multiple tasks need a lightweight way to track time witho
 ## Goals
 
 - Make it fast to start and stop tracking a task from the terminal.
-- Keep data local, portable, and human-readable.
+- Keep data local, portable, and secure.
 - Provide a simple daily report aggregated by task name.
 - Keep command output predictable and easy to scan.
+- Protect local data with encryption at rest.
 
 ## Non-Goals
 
@@ -36,7 +37,8 @@ People who work across multiple tasks need a lightweight way to track time witho
 - Show current status and elapsed time.
 - Generate a daily report listing tasks with start/end times (most recent first).
 - Show totals at the end of list and report output.
-- Store data locally in a JSON file with an override flag.
+- Store data locally in an encrypted JSON file with an override flag.
+- Encrypt the on-disk data with a user-provided passphrase entered at runtime.
 - Edit task names and timestamps after the fact.
 - Show the resolved data file location.
 - List tasks with totals and IDs, with optional date filters.
@@ -71,6 +73,7 @@ People who work across multiple tasks need a lightweight way to track time witho
 - Command errors are actionable and guide users to the next step.
 - Users can correct task names and timing without editing JSON by hand.
 - Users can quickly find task IDs via the list output.
+- Stored task data is encrypted at rest and cannot be read without a passphrase.
 
 ## Quality and Release Practices
 

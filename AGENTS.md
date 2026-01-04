@@ -5,7 +5,7 @@
 - Root contains project docs and tooling (`README.md`, `LICENSE`, `Dockerfile`, `.gitignore`).
 - `rust-toolchain.toml` pins the Rust toolchain for local and CI usage.
 - `app/` contains the Rust CLI crate (`Cargo.toml`, `Cargo.lock`, `src/`).
-- `app/src/` modules: `cli.rs`, `model.rs`, `storage.rs`, `tasks.rs`, `report.rs`, `list.rs`, `edit.rs`, `prompt.rs`, `time.rs`, `main.rs`.
+- `app/src/` modules: `cli.rs`, `crypto.rs`, `model.rs`, `storage.rs`, `tasks.rs`, `report.rs`, `list.rs`, `edit.rs`, `prompt.rs`, `time.rs`, `main.rs`.
 - `docs/` contains the product requirements and detailed design documents.
 - `.github/workflows/ci.yml` runs Rust formatting and tests on pushes and PRs.
 - `.github/workflows/release.yml` validates fmt/clippy/tests, builds binaries, and publishes a GitHub release on `v*.*.*` tags.
@@ -45,6 +45,7 @@
 - Keep `CHANGELOG.md`, `app/Cargo.toml`, and tags aligned for releases.
 - Update README/PRD/DDD when CLI behavior or commands change.
 - Prefer small, focused PRs to keep reviews fast and CI reliable.
+- Never log or print passphrases.
 
 ## UX Guidelines
 

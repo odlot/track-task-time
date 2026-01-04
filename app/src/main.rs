@@ -1,4 +1,5 @@
 mod cli;
+mod crypto;
 mod edit;
 mod list;
 mod model;
@@ -12,6 +13,7 @@ use chrono::{Local, Utc};
 use clap::Parser;
 
 use crate::cli::{Cli, Command};
+use crate::crypto::read_passphrase;
 use crate::edit::{apply_task_edits, edit_task_interactive, resolve_task_index};
 use crate::list::{ListWindow, list_header, list_tasks};
 use crate::model::{Task, TaskState};
@@ -28,14 +30,36 @@ fn main() {
     let cli = Cli::parse();
     let data_file = data_file_path(cli.data_file);
 
-    let mut store = match load_store(&data_file) {
+    let now = Utc::now();
+    let command = cli.command;
+
+    if matches!(&command, Command::Location) {
+        println!("{}", data_file.display());
+        return;
+    }
+    if matches!(&command, Command::Version) {
+        println!("ttt {}", env!("CARGO_PKG_VERSION"));
+        return;
+    }
+
+    let will_write = matches!(
+        &command,
+        Command::Start { .. }
+            | Command::Stop
+            | Command::Pause
+            | Command::Resume
+            | Command::Edit { .. }
+    );
+    let is_new_store = !data_file.exists();
+    let confirm_passphrase = will_write && is_new_store;
+    let passphrase =
+        read_passphrase(confirm_passphrase).unwrap_or_else(|err| exit_with_error(&err));
+    let mut store = match load_store(&data_file, &passphrase) {
         Ok(store) => store,
         Err(err) => exit_with_error(&err),
     };
 
-    let now = Utc::now();
-
-    match cli.command {
+    match command {
         Command::Start { task } => {
             let task_name = match task {
                 Some(name) if !name.trim().is_empty() => name,
@@ -61,25 +85,32 @@ fn main() {
                 stop_task(&mut store, idx, now);
             }
             start_task(&mut store, task_name.clone(), now);
-            save_store(&data_file, &store).unwrap_or_else(|err| exit_with_error(&err));
+            save_store(&data_file, &store, &passphrase).unwrap_or_else(|err| exit_with_error(&err));
             println!(
                 "Started: {} at {}",
                 task_name,
                 format_time_local_display(now)
             );
+            if is_new_store {
+                println!("Created encrypted data file at {}", data_file.display());
+            }
         }
         Command::Stop => {
             if let Some((idx, _)) = current_task_state(&store) {
                 let task_name = store.tasks[idx].name.clone();
                 stop_task(&mut store, idx, now);
                 let elapsed = total_elapsed(&store.tasks[idx], now);
-                save_store(&data_file, &store).unwrap_or_else(|err| exit_with_error(&err));
+                save_store(&data_file, &store, &passphrase)
+                    .unwrap_or_else(|err| exit_with_error(&err));
                 println!(
                     "Stopped: {} at {} (total {})",
                     task_name,
                     format_time_local_display(now),
                     format_duration(elapsed)
                 );
+                if is_new_store {
+                    println!("Created encrypted data file at {}", data_file.display());
+                }
             } else {
                 exit_with_error("No active or paused task. Start one with \"ttt start <task>\".");
             }
@@ -90,13 +121,17 @@ fn main() {
                     let task_name = store.tasks[idx].name.clone();
                     pause_task(&mut store, idx, now);
                     let elapsed = total_elapsed(&store.tasks[idx], now);
-                    save_store(&data_file, &store).unwrap_or_else(|err| exit_with_error(&err));
+                    save_store(&data_file, &store, &passphrase)
+                        .unwrap_or_else(|err| exit_with_error(&err));
                     println!(
                         "Paused: {} at {} (total {})",
                         task_name,
                         format_time_local_display(now),
                         format_duration(elapsed)
                     );
+                    if is_new_store {
+                        println!("Created encrypted data file at {}", data_file.display());
+                    }
                 } else {
                     exit_with_error("Task is already paused. Resume it with \"ttt resume\".");
                 }
@@ -108,12 +143,16 @@ fn main() {
             Some((idx, TaskState::Paused)) => {
                 let task_name = store.tasks[idx].name.clone();
                 resume_task(&mut store, idx, now);
-                save_store(&data_file, &store).unwrap_or_else(|err| exit_with_error(&err));
+                save_store(&data_file, &store, &passphrase)
+                    .unwrap_or_else(|err| exit_with_error(&err));
                 println!(
                     "Resumed: {} at {}",
                     task_name,
                     format_time_local_display(now)
                 );
+                if is_new_store {
+                    println!("Created encrypted data file at {}", data_file.display());
+                }
             }
             Some((_, TaskState::Active)) => {
                 let active_name = active_task_name(&store).unwrap_or_default();
@@ -151,9 +190,6 @@ fn main() {
             }
             None => println!("No active task. Start one with \"ttt start\"."),
         },
-        Command::Location => {
-            println!("{}", data_file.display());
-        }
         Command::List { today, week } => {
             if today && week {
                 exit_with_error("Use either --today or --week, not both.");
@@ -232,8 +268,13 @@ fn main() {
                 edit_task_interactive(task, now).unwrap_or_else(|err| exit_with_error(&err));
             }
 
-            save_store(&data_file, &store).unwrap_or_else(|err| exit_with_error(&err));
+            save_store(&data_file, &store, &passphrase).unwrap_or_else(|err| exit_with_error(&err));
+            if is_new_store {
+                println!("Created encrypted data file at {}", data_file.display());
+            }
         }
+        Command::Location => {}
+        Command::Version => {}
     }
 }
 
