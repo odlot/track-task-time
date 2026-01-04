@@ -9,9 +9,40 @@ permissions:
   contents: write
 
 jobs:
+  validate:
+    name: Validate
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+
+      - name: Cache cargo
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: |
+            app -> target
+
+      - name: Format
+        working-directory: app
+        run: cargo fmt --check
+
+      - name: Lint
+        working-directory: app
+        run: cargo clippy -- -D warnings
+
+      - name: Test
+        working-directory: app
+        run: cargo test
+
   build:
     name: Build (${{ matrix.target }})
     runs-on: ${{ matrix.os }}
+    needs: validate
     strategy:
       fail-fast: false
       matrix:

@@ -7,7 +7,7 @@
 - `app/` contains the Rust CLI crate (`Cargo.toml`, `Cargo.lock`, `src/`).
 - `docs/` contains the product requirements and detailed design documents.
 - `.github/workflows/ci.yml` runs Rust formatting and tests on pushes and PRs.
-- `.github/workflows/release.yml` builds binaries and publishes a GitHub release on `v*.*.*` tags.
+- `.github/workflows/release.yml` validates fmt/clippy/tests, builds binaries, and publishes a GitHub release on `v*.*.*` tags.
 - `.pre-commit-config.yaml` runs Rust formatting, check, and clippy before commits.
 - `app/target/` is build output and should not be committed.
 
