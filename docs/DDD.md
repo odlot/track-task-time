@@ -24,7 +24,8 @@ Flow:
 - `cli.rs`: clap definitions and CLI help text.
 - `main.rs`: command dispatch and wiring.
 - `model.rs`: data structures for tasks and segments.
-- `storage.rs`: load/save JSON store.
+- `crypto.rs`: encryption, decryption, and passphrase handling.
+- `storage.rs`: load/save encrypted JSON store.
 - `tasks.rs`: task lifecycle (start/stop/pause/resume/status).
 - `report.rs`: report formatting and overlap calculations.
 - `list.rs`: list view for all/today/week summaries.
@@ -40,6 +41,8 @@ Flow:
 - JSON serialization: `serde` + `serde_json`.
 - Data directory resolution: `directories`.
 - IDs: `uuid` v4.
+- Encryption: `argon2` (KDF) and `chacha20poly1305` (AEAD).
+- Passphrase input: `rpassword`.
 
 ## Data Model
 
@@ -103,9 +106,18 @@ Exit behavior:
 ## Storage Design
 
 - Default path: OS-specific user data directory via `directories`.
-- Format: pretty-printed JSON for readability.
+- Format: encrypted JSON envelope with salt, nonce, and ciphertext.
 - Persistence: write file on state changes (start/stop/pause/resume).
 - Edits update task metadata and segment timestamps in-place.
+- Passphrase is required on every run; `TTT_PASSPHRASE` can be used for automation.
+- File permissions are set to owner-only when supported.
+
+## Encryption
+
+- KDF: Argon2id with per-file salt and stored parameters.
+- Cipher: XChaCha20-Poly1305 with a random nonce per write.
+- File layout: `{ version, kdf, cipher, salt, nonce, ciphertext }` in JSON.
+- Keychain integration is out of scope but the KDF/cipher metadata is stored for future extensibility.
 
 ## Scalability Considerations
 
