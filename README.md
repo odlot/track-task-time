@@ -35,6 +35,7 @@ ttt [--data-file <path>] <command>
 - `list [--today|--week]`: List tasks and totals with optional date filters.
 - `edit [flags]`: Edit a task name or time segments (interactive list by default).
 - `report [--today]`: Show today's entries with start/end times (default: today).
+- `rekey`: Change the passphrase for the data file.
 - `version`: Show the CLI version.
 
 ### Quick Start
@@ -47,6 +48,7 @@ ttt resume
 ttt status
 ttt report
 ttt stop
+ttt rekey
 ttt version
 ```
 
@@ -72,6 +74,7 @@ ttt version
 - Override with `--data-file /path/to/ttt.json`.
 - File contents are encrypted with a passphrase.
 - The CLI prompts for the passphrase on each run.
+- Change the passphrase with `ttt rekey`.
 
 ### Output Format
 

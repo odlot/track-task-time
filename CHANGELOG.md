@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [v0.5.1] - 2026-01-04
+
+### Added
+
+- `rekey` command to change the data file passphrase.
+
 ## [v0.5.0] - 2026-01-04
 
 ### Added

@@ -39,6 +39,7 @@ People who work across multiple tasks need a lightweight way to track time witho
 - Show totals at the end of list and report output.
 - Store data locally in an encrypted JSON file with an override flag.
 - Encrypt the on-disk data with a user-provided passphrase entered at runtime.
+- Allow users to change the passphrase without losing data.
 - Edit task names and timestamps after the fact.
 - Show the resolved data file location.
 - List tasks with totals and IDs, with optional date filters.
@@ -64,6 +65,8 @@ People who work across multiple tasks need a lightweight way to track time witho
   - Run `ttt location` to print the data file path.
 - List tasks
   - Run `ttt list` for all tasks or filter with `--today` / `--week`.
+- Rekey passphrase
+  - Run `ttt rekey` and enter the current and new passphrases.
 
 ## Success Criteria
 
