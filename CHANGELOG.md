@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [v0.3.0] - 2026-01-04
+
 ### Added
 
 - `list` command to show tasks with totals and IDs, with optional date filters.
