@@ -19,6 +19,19 @@ Flow:
 3) Apply command logic and update the store.
 4) Persist the store and print output.
 
+## Code Organization
+
+- `cli.rs`: clap definitions and CLI help text.
+- `main.rs`: command dispatch and wiring.
+- `model.rs`: data structures for tasks and segments.
+- `storage.rs`: load/save JSON store.
+- `tasks.rs`: task lifecycle (start/stop/pause/resume/status).
+- `report.rs`: report formatting and overlap calculations.
+- `list.rs`: list view for all/today/week summaries.
+- `edit.rs`: task edits (interactive and flag-based).
+- `prompt.rs`: interactive selection and prompts.
+- `time.rs`: parsing and formatting for timestamps and durations.
+
 ## Technology Stack
 
 - Language: Rust 2024 edition.
@@ -77,6 +90,7 @@ CLI commands and flags:
   - Flags: `--id`, `--index`, `--name`, `--created-at`, `--closed-at`, `--segment-edit`.
 - `ttt report`
   - Prints a date header and today's entries with start/end times (most recent first).
+  - Output format: `HH:MM:SS - HH:MM:SS - Task Name (HH:MM:SS)`.
 - Global flag: `--data-file <path>` overrides the default data location.
 
 Exit behavior:
@@ -99,3 +113,9 @@ Exit behavior:
   - Incremental indexing by day for faster reports.
   - Archiving closed tasks to a separate file.
   - File locking to prevent concurrent writes.
+
+## Quality Gates and Release Automation
+
+- Pre-commit hooks run `cargo fmt`, `cargo check`, and `cargo clippy -D warnings`.
+- CI enforces formatting, linting, and tests before merges.
+- Releases are tagged with `vX.Y.Z` and publish binaries plus changelog notes.
