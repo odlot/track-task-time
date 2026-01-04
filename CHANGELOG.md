@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [v0.2.0] - 2026-01-03
+
+### Added
+
+- Pre-commit hooks for `cargo fmt`, `cargo check`, and `cargo clippy`.
+
+### Changed
+
+- Release workflow now validates fmt, clippy, and tests before building artifacts.
+- Refactored the CLI into modules for maintainability.
+
 ## [v0.1.2] - 2026-01-03
 
 ### Fixed
