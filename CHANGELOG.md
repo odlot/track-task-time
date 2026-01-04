@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [v0.5.2] - 2026-01-04
+
+### Added
+
+- `restore` command to recover the data file from recent backups.
+- Automatic backup rotation (keeps the latest three backups).
+
 ## [v0.5.1] - 2026-01-04
 
 ### Added
