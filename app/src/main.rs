@@ -9,7 +9,7 @@ mod storage;
 mod tasks;
 mod time;
 
-use chrono::{Local, Utc};
+use chrono::{DateTime, Local, Utc};
 use clap::Parser;
 
 use crate::cli::{Cli, Command};
@@ -17,9 +17,9 @@ use crate::crypto::read_passphrase;
 use crate::edit::{apply_task_edits, edit_task_interactive, resolve_task_index};
 use crate::list::{ListWindow, list_header, list_tasks};
 use crate::model::{Task, TaskState};
-use crate::prompt::{prompt_required, prompt_yes_no};
+use crate::prompt::{prompt_line, prompt_required, prompt_yes_no};
 use crate::report::report_today;
-use crate::storage::{data_file_path, load_store, save_store};
+use crate::storage::{data_file_path, list_backups, load_store, save_store};
 use crate::tasks::{
     active_task_name, current_task_state, pause_task, resume_task, start_task, stop_task,
     total_elapsed,
@@ -41,6 +41,45 @@ fn main() {
     }
     if matches!(&command, Command::Version) {
         println!("ttt {}", env!("CARGO_PKG_VERSION"));
+        return;
+    }
+    if matches!(&command, Command::Restore) {
+        let backups = list_backups(&data_file);
+        if backups.is_empty() {
+            exit_with_error("No backups found.");
+        }
+        println!("Available backups:");
+        for (idx, entry) in backups.iter().enumerate() {
+            println!("{:>3}) {}", idx + 1, format_backup_entry(entry));
+        }
+        let input = prompt_line("Select backup number (or 'q' to cancel): ")
+            .unwrap_or_else(|err| exit_with_error(&err));
+        if input.is_empty() || input.eq_ignore_ascii_case("q") || input.eq_ignore_ascii_case("quit")
+        {
+            exit_with_error("Canceled.");
+        }
+        let selection: usize = input
+            .parse()
+            .map_err(|_| "Invalid selection. Enter a number from the list.".to_string())
+            .unwrap_or_else(|err| exit_with_error(&err));
+        if selection == 0 || selection > backups.len() {
+            exit_with_error(&format!(
+                "Backup selection must be between 1 and {}.",
+                backups.len()
+            ));
+        }
+        let entry = &backups[selection - 1];
+        let label = format_backup_entry(entry);
+        if !prompt_yes_no(&format!("Restore {}? [y/N] ", label)) {
+            exit_with_error("Canceled.");
+        }
+        let passphrase = read_passphrase(false).unwrap_or_else(|err| exit_with_error(&err));
+        let store = match load_store(&entry.path, &passphrase) {
+            Ok(store) => store,
+            Err(err) => exit_with_error(&err),
+        };
+        save_store(&data_file, &store, &passphrase).unwrap_or_else(|err| exit_with_error(&err));
+        println!("Restored backup {}", entry.path.display());
         return;
     }
     if matches!(&command, Command::Rekey) {
@@ -291,6 +330,7 @@ fn main() {
         }
         Command::Location => {}
         Command::Rekey => {}
+        Command::Restore => {}
         Command::Version => {}
     }
 }
@@ -312,4 +352,21 @@ fn last_segment_end(task: &Task) -> Option<chrono::DateTime<Utc>> {
         .iter()
         .rev()
         .find_map(|segment| segment.end_at)
+}
+
+fn format_backup_entry(entry: &crate::storage::BackupEntry) -> String {
+    let name = entry
+        .path
+        .file_name()
+        .and_then(|value| value.to_str())
+        .unwrap_or("backup");
+    let modified = entry
+        .modified
+        .map(|time| {
+            DateTime::<Local>::from(time)
+                .format("%Y-%m-%d %H:%M:%S")
+                .to_string()
+        })
+        .unwrap_or_else(|| "unknown".to_string());
+    format!("{} (modified {}, {} bytes)", name, modified, entry.size)
 }

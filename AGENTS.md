@@ -52,6 +52,7 @@
 - Keep CLI help and README aligned with command arguments and flags.
 - Report output starts with a date header, then `HH:MM:SS - HH:MM:SS - Task (HH:MM:SS)`, most recent first.
 - List and report output include a total line at the end of the output.
+- Backups are created on each write; use `ttt restore` to recover.
 - List output should include status, name, id, and total duration with stable ordering.
 - Use interactive prompts when no flags are provided, but keep flags for power users.
 - Surface the data file location via `ttt location` and document it.

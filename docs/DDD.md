@@ -99,6 +99,8 @@ CLI commands and flags:
   - Prints a total line after the entries.
 - `ttt rekey`
   - Re-encrypts the data file with a new passphrase.
+- `ttt restore`
+  - Restores the data file from a recent backup.
 - `ttt version`
   - Prints the CLI version.
 - Global flag: `--data-file <path>` overrides the default data location.
@@ -115,6 +117,7 @@ Exit behavior:
 - Edits update task metadata and segment timestamps in-place.
 - Passphrase is required on every run.
 - File permissions are set to owner-only when supported.
+- Backups are kept in the same directory as `.bak1` through `.bak3`.
 
 ## Encryption
 

@@ -36,6 +36,7 @@ ttt [--data-file <path>] <command>
 - `edit [flags]`: Edit a task name or time segments (interactive list by default).
 - `report [--today]`: Show today's entries with start/end times (default: today).
 - `rekey`: Change the passphrase for the data file.
+- `restore`: Restore the data file from a backup.
 - `version`: Show the CLI version.
 
 ### Quick Start
@@ -49,6 +50,7 @@ ttt status
 ttt report
 ttt stop
 ttt rekey
+ttt restore
 ttt version
 ```
 
@@ -75,6 +77,8 @@ ttt version
 - File contents are encrypted with a passphrase.
 - The CLI prompts for the passphrase on each run.
 - Change the passphrase with `ttt rekey`.
+- Automatic backups are created on each write (`.bak1` to `.bak3`).
+- Restore a backup with `ttt restore`.
 
 ### Output Format
 
